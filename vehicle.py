@@ -1,16 +1,17 @@
 """
-Data models for the FleetSync POC.
+Vehicle model.
 
-POC NOTE: this is deliberately just ONE vehicle, no User/Household tables yet.
-The `held_by` field is a free-text name instead of a foreign key to a User
-row, purely so we can prove the locking mechanism without building auth
-first. Full version replaces `held_by` with `current_holder_id -> User.id`
-and adds a TripHistory audit table.
+CHANGED in increment 2: `held_by` (free-text string) is now
+`held_by_user_id`, a real FK to `User`. `household_id` scopes each vehicle
+to exactly one household -- required for the auth/household-scoping checks
+in routers/vehicles.py.
 """
 import enum
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, DateTime, Enum as SAEnum, Float
+from sqlalchemy import Column, Integer, String, DateTime, Enum as SAEnum, Float, ForeignKey
+from sqlalchemy.orm import relationship
+
 from database import Base
 
 
@@ -24,12 +25,16 @@ class Vehicle(Base):
     __tablename__ = "vehicles"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False, default="Household Car")
 
+    household_id = Column(Integer, ForeignKey("households.id"), nullable=False)
+    household = relationship("Household", back_populates="vehicles")
+
+    name = Column(String, nullable=False, default="Household Car")
     status = Column(SAEnum(VehicleStatus), nullable=False, default=VehicleStatus.AVAILABLE)
 
-    # Who currently has it (free text for POC; becomes a User FK later)
-    held_by = Column(String, nullable=True)
+    held_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    held_by_user = relationship("User")
+
     checked_out_at = Column(DateTime, nullable=True)
     estimated_return_at = Column(DateTime, nullable=True)
     destination_note = Column(String, nullable=True)
