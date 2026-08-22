@@ -1,4 +1,4 @@
-import { Car, Clock, MapPin, Fuel, Gauge } from "lucide-react";
+import { Car, Clock, MapPin, Gauge } from "lucide-react";
 import type { Vehicle } from "../types";
 
 const STATUS_CONFIG = {
@@ -41,7 +41,7 @@ export function StatusCard({ vehicle }: { vehicle: Vehicle }) {
 
   return (
     <div
-      className={`relative bg-surface border ${cfg.ring} rounded-3xl p-7 overflow-hidden`}
+      className={`relative bg-surface border ${cfg.ring} rounded-3xl p-7 md:p-9 w-full overflow-hidden`}
     >
       {/* ambient status glow, the card's signature element */}
       <div className={`absolute inset-0 opacity-[0.15] ${cfg.glow} pointer-events-none`} />
@@ -68,7 +68,7 @@ export function StatusCard({ vehicle }: { vehicle: Vehicle }) {
       </div>
 
       {vehicle.status === "IN_USE" && vehicle.held_by && (
-        <div className="relative grid grid-cols-2 gap-3 mb-2">
+        <div className="relative grid grid-cols-1 sm:grid-cols-2 gap-4 mb-2">
           <InfoRow icon={<Clock size={14} />} label="Taken by">
             {vehicle.held_by.name}
           </InfoRow>
@@ -89,20 +89,20 @@ export function StatusCard({ vehicle }: { vehicle: Vehicle }) {
       )}
 
       {vehicle.status === "AVAILABLE" && vehicle.last_checkin_at && (
-        <div className="relative grid grid-cols-2 gap-3 mb-2 pt-2 border-t border-border/60">
-          {vehicle.last_parking_note && (
+        <div className="relative grid grid-cols-1 sm:grid-cols-2 gap-4 mb-2 pt-2 border-t border-border/60">
+          {vehicle.last_parking_location && (
             <InfoRow icon={<MapPin size={14} />} label="Parked at">
+              {vehicle.last_parking_location}
+            </InfoRow>
+          )}
+          {vehicle.last_parking_note && (
+            <InfoRow icon={<MapPin size={14} />} label="Parking notes">
               {vehicle.last_parking_note}
             </InfoRow>
           )}
-          {vehicle.current_mileage != null && (
-            <InfoRow icon={<Gauge size={14} />} label="Mileage" mono>
-              {vehicle.current_mileage.toLocaleString()} mi
-            </InfoRow>
-          )}
-          {vehicle.fuel_pct != null && (
-            <InfoRow icon={<Fuel size={14} />} label="Fuel / charge" mono>
-              {vehicle.fuel_pct}%
+          {vehicle.miles_left != null && (
+            <InfoRow icon={<Gauge size={14} />} label="Miles left" mono>
+              {vehicle.miles_left.toLocaleString()} mi
             </InfoRow>
           )}
           <InfoRow icon={<Clock size={14} />} label="Last returned">

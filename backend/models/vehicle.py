@@ -40,7 +40,7 @@ class Vehicle(Base):
     destination_note = Column(String, nullable=True)
 
     # Filled in at check-in
-    current_mileage = Column(Float, nullable=True)
-    fuel_pct = Column(Float, nullable=True)
+    miles_left = Column(Float, nullable=True)
+    last_parking_location = Column(String, nullable=True)
     last_parking_note = Column(String, nullable=True)
     last_checkin_at = Column(DateTime, nullable=True)

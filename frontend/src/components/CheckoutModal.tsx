@@ -29,7 +29,7 @@ export function CheckoutModal({ onClose, onSubmit }: Props) {
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4 z-50">
-      <div className="bg-surface border border-border rounded-2xl p-6 w-full max-w-sm">
+      <div className="bg-surface border border-border rounded-2xl p-6 w-full max-w-sm sm:max-w-lg">
         <div className="flex items-center justify-between mb-5">
           <h3 className="font-display text-lg font-semibold">Check out car</h3>
           <button onClick={onClose} className="text-text-faint hover:text-text transition-colors">

@@ -29,9 +29,9 @@ class CheckoutRequest(BaseModel):
 
 
 class CheckinRequest(BaseModel):
-    parking_note: str
-    mileage: float
-    fuel_pct: float
+    parking_location: str
+    parking_note: Optional[str] = None
+    miles_left: float
     lat: Optional[float] = None
     lng: Optional[float] = None
 
@@ -53,8 +53,8 @@ class VehicleOut(BaseModel):
     checked_out_at: Optional[datetime] = None
     estimated_return_at: Optional[datetime] = None
     destination_note: Optional[str] = None
-    current_mileage: Optional[float] = None
-    fuel_pct: Optional[float] = None
+    miles_left: Optional[float] = None
+    last_parking_location: Optional[str] = None
     last_parking_note: Optional[str] = None
     last_checkin_at: Optional[datetime] = None
 
@@ -71,8 +71,8 @@ def _to_out(vehicle: Vehicle) -> VehicleOut:
         checked_out_at=vehicle.checked_out_at,
         estimated_return_at=vehicle.estimated_return_at,
         destination_note=vehicle.destination_note,
-        current_mileage=vehicle.current_mileage,
-        fuel_pct=vehicle.fuel_pct,
+        miles_left=vehicle.miles_left,
+        last_parking_location=vehicle.last_parking_location,
         last_parking_note=vehicle.last_parking_note,
         last_checkin_at=vehicle.last_checkin_at,
     )
@@ -158,8 +158,8 @@ def checkin_vehicle(
                 raise HTTPException(409, f"Vehicle is not currently checked out (status={vehicle.status})")
 
             vehicle.status = VehicleStatus.AVAILABLE
-            vehicle.current_mileage = req.mileage
-            vehicle.fuel_pct = req.fuel_pct
+            vehicle.miles_left = req.miles_left
+            vehicle.last_parking_location = req.parking_location
             vehicle.last_parking_note = req.parking_note
             vehicle.last_checkin_at = datetime.utcnow()
             vehicle.held_by_user_id = None

@@ -34,12 +34,12 @@ export function Dashboard() {
     setShowCheckout(false);
   }
 
-  async function handleCheckin(parkingNote: string, mileage: number, fuelPct: number) {
+  async function handleCheckin(parkingLocation: string, parkingNote: string, milesLeft: number) {
     if (!vehicle) return;
     const updated = await checkinVehicle(vehicle.id, {
-      parking_note: parkingNote,
-      mileage,
-      fuel_pct: fuelPct,
+      parking_location: parkingLocation,
+      parking_note: parkingNote || null,
+      miles_left: milesLeft,
     });
     setVehicle(updated);
     setShowCheckin(false);
@@ -50,7 +50,7 @@ export function Dashboard() {
   return (
     <div className="min-h-screen">
       <header className="border-b border-border">
-        <div className="max-w-lg mx-auto px-5 py-4 flex items-center justify-between">
+        <div className="max-w-3xl mx-auto px-5 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-available-dim flex items-center justify-center">
               <Car size={16} className="text-available" strokeWidth={2.25} />
@@ -70,7 +70,7 @@ export function Dashboard() {
         </div>
       </header>
 
-      <main className="max-w-lg mx-auto px-5 py-8">
+      <main className="max-w-3xl mx-auto px-5 py-8">
         {loading ? (
           <div className="text-center text-text-muted py-16 text-sm">Loading...</div>
         ) : !vehicle ? (

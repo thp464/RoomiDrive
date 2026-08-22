@@ -2,7 +2,7 @@
 //
 // Admin-only household user management. Mirrors the shape of
 // backend/routers/admin.py (AddUserRequest / UserOut).
-import { api } from "./client";
+import { client } from "./client";
 
 export interface HouseholdUser {
   id: number;
@@ -20,13 +20,13 @@ export interface AddUserPayload {
 }
 
 export async function listHouseholdUsers(): Promise<HouseholdUser[]> {
-  const { data } = await api.get<HouseholdUser[]>("/admin/users");
+  const { data } = await client.get<HouseholdUser[]>("/admin/users");
   return data;
 }
 
 export async function addHouseholdUser(
   payload: AddUserPayload
 ): Promise<HouseholdUser> {
-  const { data } = await api.post<HouseholdUser>("/admin/users", payload);
+  const { data } = await client.post<HouseholdUser>("/admin/users", payload);
   return data;
 }

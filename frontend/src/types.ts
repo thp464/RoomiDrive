@@ -14,8 +14,8 @@ export interface Vehicle {
   checked_out_at: string | null;
   estimated_return_at: string | null;
   destination_note: string | null;
-  current_mileage: number | null;
-  fuel_pct: number | null;
+  miles_left: number | null;
+  last_parking_location: string | null;
   last_parking_note: string | null;
   last_checkin_at: string | null;
 }
@@ -34,9 +34,9 @@ export interface CheckoutPayload {
 }
 
 export interface CheckinPayload {
-  parking_note: string;
-  mileage: number;
-  fuel_pct: number;
+  parking_location: string;
+  parking_note?: string | null;
+  miles_left: number;
   lat?: number | null;
   lng?: number | null;
 }
