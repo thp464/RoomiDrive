@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --color-bg: #14181f;
+  --color-surface: #1c222c;
+  --color-surface-raised: #232a36;
+  --color-border: #2a3140;
+
+  --color-text: #edeff3;
+  --color-text-muted: #8b93a1;
+  --color-text-faint: #5b6272;
+
+  --color-available: #7dd3a0;
+  --color-available-dim: #2c3f34;
+  --color-inuse: #f2a65a;
+  --color-inuse-dim: #40331f;
+  --color-maintenance: #e8676b;
+  --color-maintenance-dim: #3f2429;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+@layer components {
+  .input {
+    @apply w-full bg-bg border border-border rounded-lg px-3 py-2 text-sm text-text
+      placeholder:text-text-faint outline-none transition-colors
+      focus:border-available/60;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-available text-bg
+      font-medium text-sm px-4 py-2.5 transition-opacity hover:opacity-90
+      disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-surface-raised
+      border border-border text-text font-medium text-sm px-4 py-2.5
+      transition-colors hover:border-text-faint disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+}
