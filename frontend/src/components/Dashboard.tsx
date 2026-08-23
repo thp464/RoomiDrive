@@ -1,11 +1,12 @@
 import { useEffect, useState, useCallback } from "react";
-import { Car, LogOut, RefreshCw } from "lucide-react";
+import { Car, LogOut, RefreshCw, Users } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { listVehicles, checkoutVehicle, checkinVehicle } from "../api/vehicles";
 import type { Vehicle } from "../types";
 import { StatusCard } from "./StatusCard";
 import { CheckoutModal } from "./CheckoutModal";
 import { CheckinModal } from "./CheckinModal";
+import { AdminUsersModal } from "./AdminUsersModal";
 
 export function Dashboard() {
   const { user, logout } = useAuth();
@@ -13,6 +14,7 @@ export function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [showCheckout, setShowCheckout] = useState(false);
   const [showCheckin, setShowCheckin] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
 
   const refresh = useCallback(async () => {
     const vehicles = await listVehicles();
@@ -34,12 +36,12 @@ export function Dashboard() {
     setShowCheckout(false);
   }
 
-  async function handleCheckin(parkingLocation: string, parkingNote: string, milesLeft: number) {
+  async function handleCheckin(parkingNote: string, mileage: number, fuelPct: number) {
     if (!vehicle) return;
     const updated = await checkinVehicle(vehicle.id, {
-      parking_location: parkingLocation,
-      parking_note: parkingNote || null,
-      miles_left: milesLeft,
+      parking_note: parkingNote,
+      mileage,
+      fuel_pct: fuelPct,
     });
     setVehicle(updated);
     setShowCheckin(false);
@@ -50,7 +52,7 @@ export function Dashboard() {
   return (
     <div className="min-h-screen">
       <header className="border-b border-border">
-        <div className="max-w-3xl mx-auto px-5 py-4 flex items-center justify-between">
+        <div className="max-w-lg mx-auto px-5 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-available-dim flex items-center justify-center">
               <Car size={16} className="text-available" strokeWidth={2.25} />
@@ -59,6 +61,15 @@ export function Dashboard() {
           </div>
           <div className="flex items-center gap-3">
             <span className="text-sm text-text-muted hidden sm:block">{user?.name}</span>
+            {user?.is_household_admin && (
+              <button
+                onClick={() => setShowAdmin(true)}
+                className="text-text-faint hover:text-text transition-colors"
+                title="Manage household"
+              >
+                <Users size={17} />
+              </button>
+            )}
             <button
               onClick={logout}
               className="text-text-faint hover:text-text transition-colors"
@@ -70,7 +81,7 @@ export function Dashboard() {
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-5 py-8">
+      <main className="max-w-lg mx-auto px-5 py-8">
         {loading ? (
           <div className="text-center text-text-muted py-16 text-sm">Loading...</div>
         ) : !vehicle ? (
@@ -117,6 +128,7 @@ export function Dashboard() {
       {showCheckin && (
         <CheckinModal onClose={() => setShowCheckin(false)} onSubmit={handleCheckin} />
       )}
+      {showAdmin && <AdminUsersModal onClose={() => setShowAdmin(false)} />}
     </div>
   );
 }

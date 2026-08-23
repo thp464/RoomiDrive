@@ -1,17 +1,16 @@
 // src/components/AdminUsersModal.tsx
 //
 // Lets a household admin view current members and add a new roommate
-// with a temporary password, without needing /docs. Mirrors the
-// structural pattern of CheckoutModal/CheckinModal.
+// with a temporary password, without needing /docs. Uses the same
+// design tokens as StatusCard/Dashboard (font-display, text-text-*,
+// btn-primary/btn-secondary, border-border, available/in-use/maintenance
+// status colors).
 import { useEffect, useState } from "react";
-import {
-  addHouseholdUser,
-  listHouseholdUsers,
-  type HouseholdUser,
-} from "../api/admin";
+import { X } from "lucide-react";
+import { addHouseholdUser, listHouseholdUsers } from "../api/admin";
+import type { CurrentUser } from "../types";
 
 interface AdminUsersModalProps {
-  open: boolean;
   onClose: () => void;
 }
 
@@ -22,20 +21,17 @@ const emptyForm = {
   is_household_admin: false,
 };
 
-export default function AdminUsersModal({ open, onClose }: AdminUsersModalProps) {
-  const [users, setUsers] = useState<HouseholdUser[]>([]);
-  const [loadingUsers, setLoadingUsers] = useState(false);
+export function AdminUsersModal({ onClose }: AdminUsersModalProps) {
+  const [users, setUsers] = useState<CurrentUser[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(true);
   const [form, setForm] = useState(emptyForm);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [justAdded, setJustAdded] = useState<HouseholdUser | null>(null);
+  const [justAdded, setJustAdded] = useState<CurrentUser | null>(null);
 
   useEffect(() => {
-    if (!open) return;
-    setError(null);
-    setJustAdded(null);
     refreshUsers();
-  }, [open]);
+  }, []);
 
   async function refreshUsers() {
     setLoadingUsers(true);
@@ -61,158 +57,133 @@ export default function AdminUsersModal({ open, onClose }: AdminUsersModalProps)
       setForm(emptyForm);
     } catch (err: any) {
       const detail = err?.response?.data?.detail;
-      setError(
-        typeof detail === "string" ? detail : "Couldn't add that user."
-      );
+      setError(typeof detail === "string" ? detail : "Couldn't add that user.");
     } finally {
       setSubmitting(false);
     }
   }
 
-  if (!open) return null;
-
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-lg rounded-2xl bg-neutral-900 text-neutral-100 shadow-xl"
+        className="w-full max-w-md rounded-xl border border-border bg-surface"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-neutral-800 px-6 py-4">
-          <h2 className="font-[Space_Grotesk] text-lg font-semibold">
+        <div className="flex items-center justify-between border-b border-border px-5 py-4">
+          <h2 className="font-display font-semibold tracking-tight">
             Household members
           </h2>
           <button
             onClick={onClose}
-            aria-label="Close"
-            className="rounded-full p-1 text-neutral-400 hover:bg-neutral-800 hover:text-neutral-100"
+            title="Close"
+            className="text-text-faint hover:text-text transition-colors"
           >
-            ✕
+            <X size={17} />
           </button>
         </div>
 
-        <div className="max-h-[60vh] overflow-y-auto px-6 py-4">
-          <h3 className="mb-2 font-[Inter] text-sm font-medium text-neutral-400">
+        <div className="max-h-[65vh] overflow-y-auto px-5 py-4">
+          <h3 className="mb-2 text-xs font-medium uppercase tracking-wide text-text-faint">
             Current members
           </h3>
+
           {loadingUsers ? (
-            <p className="font-[Inter] text-sm text-neutral-500">Loading…</p>
+            <p className="text-sm text-text-muted py-2">Loading...</p>
           ) : (
-            <ul className="mb-6 divide-y divide-neutral-800 rounded-lg border border-neutral-800">
+            <ul className="mb-6 divide-y divide-border rounded-lg border border-border">
               {users.map((u) => (
-                <li
-                  key={u.id}
-                  className="flex items-center justify-between px-3 py-2"
-                >
+                <li key={u.id} className="flex items-center justify-between px-3 py-2">
                   <div>
-                    <p className="font-[Inter] text-sm font-medium">{u.name}</p>
-                    <p className="font-[JetBrains_Mono] text-xs text-neutral-500">
-                      {u.email}
-                    </p>
+                    <p className="text-sm text-text">{u.name}</p>
+                    <p className="text-xs text-text-faint">{u.email}</p>
                   </div>
                   {u.is_household_admin && (
-                    <span className="rounded-full bg-amber-500/20 px-2 py-0.5 font-[Inter] text-xs text-amber-400">
+                    <span className="rounded-full bg-in-use-dim px-2 py-0.5 text-xs text-in-use">
                       admin
                     </span>
                   )}
                 </li>
               ))}
               {users.length === 0 && (
-                <li className="px-3 py-2 font-[Inter] text-sm text-neutral-500">
-                  No members yet.
-                </li>
+                <li className="px-3 py-3 text-sm text-text-muted">No members yet.</li>
               )}
             </ul>
           )}
 
-          <h3 className="mb-2 font-[Inter] text-sm font-medium text-neutral-400">
+          <h3 className="mb-2 text-xs font-medium uppercase tracking-wide text-text-faint">
             Add a roommate
           </h3>
+
           <form onSubmit={handleSubmit} className="space-y-3">
             <div>
-              <label className="mb-1 block font-[Inter] text-xs text-neutral-400">
-                Name
-              </label>
+              <label className="mb-1 block text-xs text-text-muted">Name</label>
               <input
                 required
                 value={form.name}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, name: e.target.value }))
-                }
-                className="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-3 py-2 font-[Inter] text-sm outline-none focus:border-emerald-400"
+                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                 placeholder="Alex Roommate"
+                className="w-full rounded-lg border border-border bg-transparent px-3 py-2 text-sm text-text outline-none focus:border-available"
               />
             </div>
             <div>
-              <label className="mb-1 block font-[Inter] text-xs text-neutral-400">
-                Email
-              </label>
+              <label className="mb-1 block text-xs text-text-muted">Email</label>
               <input
                 required
                 type="email"
                 value={form.email}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, email: e.target.value }))
-                }
-                className="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-3 py-2 font-[Inter] text-sm outline-none focus:border-emerald-400"
+                onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                 placeholder="roommate@example.com"
+                className="w-full rounded-lg border border-border bg-transparent px-3 py-2 text-sm text-text outline-none focus:border-available"
               />
             </div>
             <div>
-              <label className="mb-1 block font-[Inter] text-xs text-neutral-400">
+              <label className="mb-1 block text-xs text-text-muted">
                 Temporary password
               </label>
               <input
                 required
-                type="text"
                 value={form.temporary_password}
                 onChange={(e) =>
-                  setForm((f) => ({
-                    ...f,
-                    temporary_password: e.target.value,
-                  }))
+                  setForm((f) => ({ ...f, temporary_password: e.target.value }))
                 }
-                className="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-3 py-2 font-[JetBrains_Mono] text-sm outline-none focus:border-emerald-400"
                 placeholder="changeme123"
+                className="w-full rounded-lg border border-border bg-transparent px-3 py-2 font-mono text-sm text-text outline-none focus:border-available"
               />
-              <p className="mt-1 font-[Inter] text-xs text-neutral-500">
-                They'll use this to log in for the first time. There's no
-                forced reset yet — worth doing before this goes beyond a POC.
+              <p className="mt-1 text-xs text-text-faint">
+                They'll use this to log in the first time. Nothing forces a
+                reset yet — worth adding before this goes beyond a POC.
               </p>
             </div>
-            <label className="flex items-center gap-2 font-[Inter] text-sm text-neutral-300">
+            <label className="flex items-center gap-2 text-sm text-text-muted">
               <input
                 type="checkbox"
                 checked={form.is_household_admin}
                 onChange={(e) =>
-                  setForm((f) => ({
-                    ...f,
-                    is_household_admin: e.target.checked,
-                  }))
+                  setForm((f) => ({ ...f, is_household_admin: e.target.checked }))
                 }
-                className="h-4 w-4 rounded border-neutral-600 bg-neutral-800"
+                className="h-4 w-4 rounded border-border"
               />
               Make this person a household admin
             </label>
 
-            {error && (
-              <p className="font-[Inter] text-sm text-red-400">{error}</p>
-            )}
+            {error && <p className="text-sm text-maintenance">{error}</p>}
             {justAdded && (
-              <p className="font-[Inter] text-sm text-emerald-400">
+              <p className="text-sm text-available">
                 Added {justAdded.name}. They can log in now.
               </p>
             )}
 
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-full rounded-lg bg-emerald-500 px-4 py-2 font-[Inter] text-sm font-medium text-neutral-950 transition hover:bg-emerald-400 disabled:opacity-50"
-            >
-              {submitting ? "Adding…" : "Add roommate"}
-            </button>
+            <div className="flex gap-3 pt-1">
+              <button type="submit" disabled={submitting} className="btn-primary flex-1">
+                {submitting ? "Adding..." : "Add roommate"}
+              </button>
+              <button type="button" onClick={onClose} className="btn-secondary">
+                Done
+              </button>
+            </div>
           </form>
         </div>
       </div>
