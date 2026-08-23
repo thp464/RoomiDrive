@@ -7,6 +7,7 @@ export interface BootstrapPayload {
   admin_email: string;
   admin_password: string;
   vehicle_name: string;
+  setup_secret: string;
 }
 
 export async function bootstrapHousehold(payload: BootstrapPayload): Promise<string> {

@@ -19,6 +19,7 @@ export function AuthScreen() {
   const [householdName, setHouseholdName] = useState("");
   const [adminName, setAdminName] = useState("");
   const [vehicleName, setVehicleName] = useState("");
+  const [setupSecret, setSetupSecret] = useState("");
 
   async function handleLogin(e: FormEvent) {
     e.preventDefault();
@@ -45,10 +46,11 @@ export function AuthScreen() {
         admin_email: email,
         admin_password: password,
         vehicle_name: vehicleName || "Household Car",
+        setup_secret: setupSecret,
       });
       await loginWithToken(token);
     } catch {
-      setError("Couldn't create household. That email may already be registered.");
+      setError("Couldn't create household. Check your setup secret, or that email may already be registered.");
     } finally {
       setSubmitting(false);
     }
@@ -159,6 +161,16 @@ export function AuthScreen() {
                   onChange={(e) => setPassword(e.target.value)}
                   className="input"
                   placeholder="At least 6 characters"
+                />
+              </Field>
+              <Field label="Setup secret">
+                <input
+                  type="password"
+                  required
+                  value={setupSecret}
+                  onChange={(e) => setSetupSecret(e.target.value)}
+                  className="input"
+                  placeholder="Ask whoever runs this instance"
                 />
               </Field>
               {error && <p className="text-maintenance text-sm">{error}</p>}

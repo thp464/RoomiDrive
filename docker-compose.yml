@@ -20,6 +20,7 @@ services:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-roomidrive}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-roomidrive}
       REDIS_URL: redis://redis:6379/0
       JWT_SECRET: ${JWT_SECRET}
+      BOOTSTRAP_SECRET: ${BOOTSTRAP_SECRET}
     depends_on:
       - db
       - redis

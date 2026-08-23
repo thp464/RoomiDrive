@@ -7,6 +7,8 @@ production this would be locked down -- e.g. a one-time setup token, or
 invite-only -- since right now it can be called repeatedly to create
 unlimited households.
 """
+import hmac
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr
@@ -16,6 +18,7 @@ from database import get_db
 from models import User, Household, Vehicle
 from core.security import hash_password, verify_password, create_access_token
 from core.deps import get_current_user
+from config import settings
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -26,6 +29,7 @@ class BootstrapRequest(BaseModel):
     admin_email: EmailStr
     admin_password: str
     vehicle_name: str = "Household Car"
+    setup_secret: str
 
 
 class TokenResponse(BaseModel):
@@ -47,6 +51,9 @@ class UserOut(BaseModel):
 @router.post("/bootstrap-household", response_model=TokenResponse)
 def bootstrap_household(req: BootstrapRequest, db: Session = Depends(get_db)):
     """Creates a new household + its first admin user + one vehicle, all in one call."""
+    if not hmac.compare_digest(req.setup_secret, settings.bootstrap_secret):
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Invalid setup secret")
+
     if db.query(User).filter(User.email == req.admin_email).first():
         raise HTTPException(400, "Email already registered")
 
