@@ -33,6 +33,18 @@ export interface CheckoutPayload {
   destination_note?: string | null;
 }
 
+export interface Trip {
+  id: number;
+  user: Holder;
+  checked_out_at: string;
+  estimated_return_at: string | null;
+  destination_note: string | null;
+  checked_in_at: string | null;
+  parking_location: string | null;
+  parking_note: string | null;
+  miles_left: number | null;
+}
+
 export interface CheckinPayload {
   parking_location: string;
   parking_note?: string | null;

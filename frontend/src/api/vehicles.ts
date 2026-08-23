@@ -1,5 +1,5 @@
 import { client } from "./client";
-import type { Vehicle, CheckoutPayload, CheckinPayload } from "../types";
+import type { Vehicle, CheckoutPayload, CheckinPayload, Trip } from "../types";
 
 export async function listVehicles(): Promise<Vehicle[]> {
   const res = await client.get("/vehicles");
@@ -18,5 +18,10 @@ export async function checkoutVehicle(id: number, payload: CheckoutPayload): Pro
 
 export async function checkinVehicle(id: number, payload: CheckinPayload): Promise<Vehicle> {
   const res = await client.post(`/vehicles/${id}/checkin`, payload);
+  return res.data;
+}
+
+export async function listTrips(id: number): Promise<Trip[]> {
+  const res = await client.get(`/vehicles/${id}/trips`);
   return res.data;
 }

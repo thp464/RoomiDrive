@@ -16,7 +16,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from database import get_db
-from models import Vehicle, VehicleStatus, User
+from models import Vehicle, VehicleStatus, User, TripHistory
 from core.deps import get_current_user
 from locking import vehicle_lock, LockNotAcquired
 
@@ -57,6 +57,21 @@ class VehicleOut(BaseModel):
     last_parking_location: Optional[str] = None
     last_parking_note: Optional[str] = None
     last_checkin_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class TripOut(BaseModel):
+    id: int
+    user: HolderOut
+    checked_out_at: datetime
+    estimated_return_at: Optional[datetime] = None
+    destination_note: Optional[str] = None
+    checked_in_at: Optional[datetime] = None
+    parking_location: Optional[str] = None
+    parking_note: Optional[str] = None
+    miles_left: Optional[float] = None
 
     class Config:
         from_attributes = True
@@ -122,11 +137,21 @@ def checkout_vehicle(
             if vehicle.status != VehicleStatus.AVAILABLE:
                 raise HTTPException(409, f"Vehicle is not available (status={vehicle.status})")
 
+            now = datetime.utcnow()
             vehicle.status = VehicleStatus.IN_USE
             vehicle.held_by_user_id = current_user.id
-            vehicle.checked_out_at = datetime.utcnow()
+            vehicle.checked_out_at = now
             vehicle.estimated_return_at = req.estimated_return_at
             vehicle.destination_note = req.destination_note
+
+            db.add(TripHistory(
+                household_id=current_user.household_id,
+                vehicle_id=vehicle.id,
+                user_id=current_user.id,
+                checked_out_at=now,
+                estimated_return_at=req.estimated_return_at,
+                destination_note=req.destination_note,
+            ))
 
             db.commit()
             db.refresh(vehicle)
@@ -157,15 +182,28 @@ def checkin_vehicle(
             if vehicle.status != VehicleStatus.IN_USE:
                 raise HTTPException(409, f"Vehicle is not currently checked out (status={vehicle.status})")
 
+            now = datetime.utcnow()
             vehicle.status = VehicleStatus.AVAILABLE
             vehicle.miles_left = req.miles_left
             vehicle.last_parking_location = req.parking_location
             vehicle.last_parking_note = req.parking_note
-            vehicle.last_checkin_at = datetime.utcnow()
+            vehicle.last_checkin_at = now
             vehicle.held_by_user_id = None
             vehicle.checked_out_at = None
             vehicle.estimated_return_at = None
             vehicle.destination_note = None
+
+            open_trip = (
+                db.query(TripHistory)
+                .filter(TripHistory.vehicle_id == vehicle_id, TripHistory.checked_in_at.is_(None))
+                .order_by(TripHistory.checked_out_at.desc())
+                .first()
+            )
+            if open_trip:
+                open_trip.checked_in_at = now
+                open_trip.parking_location = req.parking_location
+                open_trip.parking_note = req.parking_note
+                open_trip.miles_left = req.miles_left
 
             db.commit()
             db.refresh(vehicle)
@@ -173,3 +211,21 @@ def checkin_vehicle(
 
     except LockNotAcquired:
         raise HTTPException(409, "Vehicle is currently being updated by someone else -- try again")
+
+
+@router.get("/{vehicle_id}/trips", response_model=List[TripOut])
+def list_trips(
+    vehicle_id: int,
+    limit: int = 20,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    _get_household_vehicle(db, vehicle_id, current_user.household_id)
+    trips = (
+        db.query(TripHistory)
+        .filter(TripHistory.vehicle_id == vehicle_id, TripHistory.household_id == current_user.household_id)
+        .order_by(TripHistory.checked_out_at.desc())
+        .limit(limit)
+        .all()
+    )
+    return trips

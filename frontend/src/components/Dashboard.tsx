@@ -1,16 +1,18 @@
 import { useEffect, useState, useCallback } from "react";
 import { Car, LogOut, RefreshCw, Users } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import { listVehicles, checkoutVehicle, checkinVehicle } from "../api/vehicles";
-import type { Vehicle } from "../types";
+import { listVehicles, checkoutVehicle, checkinVehicle, listTrips } from "../api/vehicles";
+import type { Vehicle, Trip } from "../types";
 import { StatusCard } from "./StatusCard";
 import { CheckoutModal } from "./CheckoutModal";
 import { CheckinModal } from "./CheckinModal";
 import { AdminUsersModal } from "./AdminUsersModal";
+import { TripHistory } from "./TripHistory";
 
 export function Dashboard() {
   const { user, logout } = useAuth();
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
+  const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCheckout, setShowCheckout] = useState(false);
   const [showCheckin, setShowCheckin] = useState(false);
@@ -18,7 +20,9 @@ export function Dashboard() {
 
   const refresh = useCallback(async () => {
     const vehicles = await listVehicles();
-    setVehicle(vehicles[0] ?? null);
+    const v = vehicles[0] ?? null;
+    setVehicle(v);
+    setTrips(v ? await listTrips(v.id) : []);
     setLoading(false);
   }, []);
 
@@ -34,17 +38,19 @@ export function Dashboard() {
     });
     setVehicle(updated);
     setShowCheckout(false);
+    setTrips(await listTrips(updated.id));
   }
 
-  async function handleCheckin(parkingNote: string, mileage: number, fuelPct: number) {
+  async function handleCheckin(parkingLocation: string, parkingNote: string, milesLeft: number) {
     if (!vehicle) return;
     const updated = await checkinVehicle(vehicle.id, {
-      parking_note: parkingNote,
-      mileage,
-      fuel_pct: fuelPct,
+      parking_location: parkingLocation,
+      parking_note: parkingNote || null,
+      miles_left: milesLeft,
     });
     setVehicle(updated);
     setShowCheckin(false);
+    setTrips(await listTrips(updated.id));
   }
 
   const isMine = vehicle?.held_by?.email === user?.email;
@@ -118,6 +124,15 @@ export function Dashboard() {
                 Only {vehicle.held_by?.name} can check the car back in.
               </p>
             )}
+
+            <div className="mt-8">
+              <h3 className="text-xs text-text-muted uppercase tracking-wider mb-3">
+                Recent activity
+              </h3>
+              <div className="bg-surface border border-border rounded-2xl px-5 py-1">
+                <TripHistory trips={trips} />
+              </div>
+            </div>
           </>
         )}
       </main>
