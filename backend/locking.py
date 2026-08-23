@@ -23,12 +23,15 @@ This is the classic "Redlock-lite" single-instance pattern. It's not as
 bulletproof as a multi-node Redlock, but it's the industry-standard
 starting point and is exactly what's asked for in the spec (SET NX EX).
 """
+import os
 import uuid
 from contextlib import contextmanager
 
 import redis
 
-redis_client = redis.Redis(host="localhost", port=6379, db=0, decode_responses=True)
+redis_client = redis.from_url(
+    os.getenv("REDIS_URL", "redis://localhost:6379/0"), decode_responses=True
+)
 
 _RELEASE_LUA = """
 if redis.call("get", KEYS[1]) == ARGV[1] then

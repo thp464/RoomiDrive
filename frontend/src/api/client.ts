@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const TOKEN_KEY = "fleetsync_token";
+const TOKEN_KEY = "roomidrive_token";
 
 export const client = axios.create({
   baseURL: "/api",

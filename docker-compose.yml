@@ -1,0 +1,47 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-roomidrive}
+      POSTGRES_USER: ${POSTGRES_USER:-roomidrive}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-roomidrive}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-roomidrive}
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      - db
+      - redis
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+
+  # Outbound-only connection to Cloudflare -- no ports need to be opened
+  # or forwarded on the home router/firewall. Public hostname -> service
+  # routing (pointing at http://frontend:80) is configured once in the
+  # Cloudflare Zero Trust dashboard when the tunnel is created there.
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN}
+    depends_on:
+      - frontend
+
+volumes:
+  db_data:

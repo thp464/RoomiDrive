@@ -63,7 +63,7 @@ export function Dashboard() {
             <div className="w-8 h-8 rounded-lg bg-available-dim flex items-center justify-center">
               <Car size={16} className="text-available" strokeWidth={2.25} />
             </div>
-            <span className="font-display font-semibold tracking-tight">FleetSync</span>
+            <span className="font-display font-semibold tracking-tight">RoomiDrive</span>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-sm text-text-muted hidden sm:block">{user?.name}</span>

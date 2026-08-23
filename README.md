@@ -1,4 +1,4 @@
-# FleetSync — POC
+# RoomiDrive — POC
 
 Incrementally-built full-stack app. Currently at **increment 3**: React
 frontend on top of the auth + concurrency-safe backend from increments 1–2.
@@ -6,7 +6,7 @@ frontend on top of the auth + concurrency-safe backend from increments 1–2.
 ## What's here
 
 ```
-fleetsync-poc/
+roomidrive-poc/
 ├── backend/                    # FastAPI + SQLite + Redis (see increments 1-2)
 │   └── ... (see backend section below)
 └── frontend/                   # React + Vite + TypeScript + Tailwind v4
@@ -44,7 +44,7 @@ fleetsync-poc/
 cd backend
 python3 -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
-rm -f fleetsync_poc.db   # start clean
+rm -f roomidrive_poc.db   # start clean
 uvicorn main:app --reload
 ```
 

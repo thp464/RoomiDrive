@@ -61,7 +61,7 @@ export function AuthScreen() {
           <div className="w-9 h-9 rounded-lg bg-available-dim flex items-center justify-center">
             <Car size={18} className="text-available" strokeWidth={2.25} />
           </div>
-          <span className="font-display font-semibold text-lg tracking-tight">FleetSync</span>
+          <span className="font-display font-semibold text-lg tracking-tight">RoomiDrive</span>
         </div>
 
         <div className="bg-surface border border-border rounded-2xl p-6 shadow-xl shadow-black/20">

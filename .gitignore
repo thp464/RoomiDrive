@@ -4,9 +4,13 @@ __pycache__/
 venv/
 .venv/
 *.egg-info/
+
+# Node / frontend build output
+node_modules/
+dist/
  
 # Local DB
-backend/fleetsync_poc.db
+backend/roomidrive_poc.db
 *.db
  
 # Env / secrets

@@ -1,5 +1,5 @@
 """
-FleetSync backend entrypoint.
+RoomiDrive backend entrypoint.
 
 Increment 2: real User/Household models + JWT auth landed. Endpoint logic
 now lives in routers/ (auth, admin, vehicles) -- this file is just app
@@ -16,7 +16,7 @@ from routers import auth, admin, vehicles
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="FleetSync")
+app = FastAPI(title="RoomiDrive")
 
 app.include_router(auth.router)
 app.include_router(admin.router)
