@@ -22,7 +22,19 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     return user
 
 
-def get_current_admin_user(current_user: User = Depends(get_current_user)) -> User:
+def require_password_set(current_user: User = Depends(get_current_user)) -> User:
+    """
+    Blocks everything except /auth/me and /auth/change-password (which use
+    get_current_user directly) until a user with a temporary password has
+    set their own. Prevents someone from using an admin-issued temp
+    password to check out a car (or anything else) before it's changed.
+    """
+    if current_user.must_reset_password:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Password reset required")
+    return current_user
+
+
+def get_current_admin_user(current_user: User = Depends(require_password_set)) -> User:
     if not current_user.is_household_admin:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Admin privileges required")
     return current_user

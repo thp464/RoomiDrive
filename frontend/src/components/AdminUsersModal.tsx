@@ -100,11 +100,18 @@ export function AdminUsersModal({ onClose }: AdminUsersModalProps) {
                     <p className="text-sm text-text">{u.name}</p>
                     <p className="text-xs text-text-faint">{u.email}</p>
                   </div>
-                  {u.is_household_admin && (
-                    <span className="rounded-full bg-in-use-dim px-2 py-0.5 text-xs text-in-use">
-                      admin
-                    </span>
-                  )}
+                  <div className="flex items-center gap-1.5">
+                    {u.must_reset_password && (
+                      <span className="rounded-full bg-maintenance-dim px-2 py-0.5 text-xs text-maintenance">
+                        pending reset
+                      </span>
+                    )}
+                    {u.is_household_admin && (
+                      <span className="rounded-full bg-in-use-dim px-2 py-0.5 text-xs text-in-use">
+                        admin
+                      </span>
+                    )}
+                  </div>
                 </li>
               ))}
               {users.length === 0 && (

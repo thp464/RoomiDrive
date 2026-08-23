@@ -30,6 +30,7 @@ class UserOut(BaseModel):
     name: str
     is_household_admin: bool
     household_id: int
+    must_reset_password: bool
 
     class Config:
         from_attributes = True
@@ -50,6 +51,7 @@ def add_user(
         hashed_password=hash_password(req.temporary_password),
         is_household_admin=req.is_household_admin,
         household_id=admin.household_id,  # always the admin's own household -- no cross-household adds
+        must_reset_password=True,
     )
     db.add(new_user)
     db.commit()

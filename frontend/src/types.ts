@@ -26,6 +26,7 @@ export interface CurrentUser {
   name: string;
   is_household_admin: boolean;
   household_id: number;
+  must_reset_password: boolean;
 }
 
 export interface CheckoutPayload {

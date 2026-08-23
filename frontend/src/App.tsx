@@ -1,6 +1,7 @@
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { AuthScreen } from "./components/AuthScreen";
 import { Dashboard } from "./components/Dashboard";
+import { ResetPasswordScreen } from "./components/ResetPasswordScreen";
 
 function Root() {
   const { user, loading } = useAuth();
@@ -13,7 +14,9 @@ function Root() {
     );
   }
 
-  return user ? <Dashboard /> : <AuthScreen />;
+  if (!user) return <AuthScreen />;
+  if (user.must_reset_password) return <ResetPasswordScreen />;
+  return <Dashboard />;
 }
 
 export default function App() {

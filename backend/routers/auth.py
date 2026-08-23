@@ -43,9 +43,15 @@ class UserOut(BaseModel):
     name: str
     is_household_admin: bool
     household_id: int
+    must_reset_password: bool
 
     class Config:
         from_attributes = True
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
 
 
 @router.post("/bootstrap-household", response_model=TokenResponse)
@@ -67,6 +73,7 @@ def bootstrap_household(req: BootstrapRequest, db: Session = Depends(get_db)):
         name=req.admin_name,
         is_household_admin=True,
         household_id=household.id,
+        must_reset_password=False,
     )
     db.add(admin)
 
@@ -97,4 +104,25 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 
 @router.get("/me", response_model=UserOut)
 def read_current_user(current_user: User = Depends(get_current_user)):
+    return current_user
+
+
+@router.post("/change-password", response_model=UserOut)
+def change_password(
+    req: ChangePasswordRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Works even while must_reset_password is set -- uses get_current_user
+    directly (not require_password_set) since this is the one action a
+    user with a temporary password needs to be able to take.
+    """
+    if not verify_password(req.current_password, current_user.hashed_password):
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Current password is incorrect")
+
+    current_user.hashed_password = hash_password(req.new_password)
+    current_user.must_reset_password = False
+    db.commit()
+    db.refresh(current_user)
     return current_user

@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from models import Vehicle, VehicleStatus, User, TripHistory
-from core.deps import get_current_user
+from core.deps import require_password_set
 from locking import vehicle_lock, LockNotAcquired
 
 router = APIRouter(prefix="/api/vehicles", tags=["vehicles"])
@@ -105,13 +105,13 @@ def _get_household_vehicle(db: Session, vehicle_id: int, household_id: int) -> V
 
 
 @router.get("", response_model=List[VehicleOut])
-def list_vehicles(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def list_vehicles(db: Session = Depends(get_db), current_user: User = Depends(require_password_set)):
     vehicles = db.query(Vehicle).filter(Vehicle.household_id == current_user.household_id).all()
     return [_to_out(v) for v in vehicles]
 
 
 @router.get("/{vehicle_id}", response_model=VehicleOut)
-def get_vehicle(vehicle_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def get_vehicle(vehicle_id: int, db: Session = Depends(get_db), current_user: User = Depends(require_password_set)):
     vehicle = _get_household_vehicle(db, vehicle_id, current_user.household_id)
     return _to_out(vehicle)
 
@@ -121,7 +121,7 @@ def checkout_vehicle(
     vehicle_id: int,
     req: CheckoutRequest,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_password_set),
 ):
     try:
         with vehicle_lock(vehicle_id):
@@ -166,7 +166,7 @@ def checkin_vehicle(
     vehicle_id: int,
     req: CheckinRequest,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_password_set),
 ):
     try:
         with vehicle_lock(vehicle_id):
@@ -218,7 +218,7 @@ def list_trips(
     vehicle_id: int,
     limit: int = 20,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_password_set),
 ):
     _get_household_vehicle(db, vehicle_id, current_user.household_id)
     trips = (
