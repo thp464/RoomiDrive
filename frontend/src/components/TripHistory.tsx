@@ -15,7 +15,7 @@ function formatTime(iso: string | null): string {
 export function TripHistory({ trips }: { trips: Trip[] }) {
   if (trips.length === 0) {
     return (
-      <p className="text-sm text-text-muted text-center py-8">
+      <p className="text-sm text-text-muted text-center py-3">
         No trips logged yet.
       </p>
     );
@@ -24,7 +24,7 @@ export function TripHistory({ trips }: { trips: Trip[] }) {
   return (
     <ul className="divide-y divide-border">
       {trips.map((trip) => (
-        <li key={trip.id} className="py-4 first:pt-0 last:pb-0">
+        <li key={trip.id} className="py-4">
           <div className="flex items-center justify-between mb-1.5">
             <span className="font-medium text-sm">{trip.user.name}</span>
             <span

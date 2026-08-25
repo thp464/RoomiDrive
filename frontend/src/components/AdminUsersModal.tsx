@@ -107,7 +107,7 @@ export function AdminUsersModal({ onClose }: AdminUsersModalProps) {
                       </span>
                     )}
                     {u.is_household_admin && (
-                      <span className="rounded-full bg-in-use-dim px-2 py-0.5 text-xs text-in-use">
+                      <span className="rounded-full bg-inuse-dim px-2 py-0.5 text-xs text-inuse">
                         admin
                       </span>
                     )}

@@ -23,7 +23,7 @@ export function ReservationsPanel({
 
   if (reservations.length === 0) {
     return (
-      <p className="text-sm text-text-muted text-center py-8">
+      <p className="text-sm text-text-muted text-center py-3">
         No upcoming reservations.
       </p>
     );
@@ -34,7 +34,7 @@ export function ReservationsPanel({
       {reservations.map((r) => {
         const canCancel = r.user.id === user?.id || user?.is_household_admin;
         return (
-          <li key={r.id} className="py-4 first:pt-0 last:pb-0 flex items-start justify-between gap-3">
+          <li key={r.id} className="py-4 flex items-start justify-between gap-3">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="font-medium text-sm">{r.user.name}</span>

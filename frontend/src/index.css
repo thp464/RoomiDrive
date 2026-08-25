@@ -5,21 +5,21 @@
   --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
-  --color-bg: #14181f;
-  --color-surface: #1c222c;
-  --color-surface-raised: #232a36;
-  --color-border: #2a3140;
+  --color-bg: #10131b;
+  --color-surface: #1a2029;
+  --color-surface-raised: #232b3a;
+  --color-border: #313b52;
 
-  --color-text: #edeff3;
-  --color-text-muted: #8b93a1;
-  --color-text-faint: #5b6272;
+  --color-text: #f4f6fa;
+  --color-text-muted: #9aa4bd;
+  --color-text-faint: #626c87;
 
-  --color-available: #7dd3a0;
-  --color-available-dim: #2c3f34;
-  --color-inuse: #f2a65a;
-  --color-inuse-dim: #40331f;
-  --color-maintenance: #e8676b;
-  --color-maintenance-dim: #3f2429;
+  --color-available: #4ade9c;
+  --color-available-dim: #1c3a30;
+  --color-inuse: #ffb454;
+  --color-inuse-dim: #43331a;
+  --color-maintenance: #ff6b6b;
+  --color-maintenance-dim: #452226;
 }
 
 body {
@@ -27,9 +27,9 @@ body {
   /* Faint ambient glow blobs, fixed to the viewport, so the flat dark
      background has some depth instead of reading as a single solid slab. */
   background-image:
-    radial-gradient(50% 40% at 12% -5%, rgba(125, 211, 160, 0.10), transparent 70%),
-    radial-gradient(45% 35% at 100% 10%, rgba(242, 166, 90, 0.07), transparent 70%),
-    radial-gradient(40% 35% at 50% 100%, rgba(125, 211, 160, 0.05), transparent 70%);
+    radial-gradient(50% 40% at 12% -5%, rgba(74, 222, 156, 0.12), transparent 70%),
+    radial-gradient(45% 35% at 100% 10%, rgba(255, 180, 84, 0.08), transparent 70%),
+    radial-gradient(40% 35% at 50% 100%, rgba(74, 222, 156, 0.06), transparent 70%);
   background-attachment: fixed;
   color: var(--color-text);
   font-family: var(--font-body);

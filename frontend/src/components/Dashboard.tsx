@@ -163,7 +163,7 @@ export function Dashboard() {
                     <CalendarPlus size={13} /> Reserve a time
                   </button>
                 </div>
-                <div className="bg-surface border border-border rounded-2xl px-5 py-1">
+                <div className="bg-surface border border-border rounded-2xl p-5">
                   <ReservationsPanel reservations={reservations} onCancel={handleCancelReservation} />
                 </div>
               </div>
@@ -172,7 +172,7 @@ export function Dashboard() {
                 <h3 className="text-xs text-text-muted uppercase tracking-wider mb-3">
                   Recent activity
                 </h3>
-                <div className="bg-surface border border-border rounded-2xl px-5 py-1">
+                <div className="bg-surface border border-border rounded-2xl p-5">
                   <TripHistory trips={trips} />
                 </div>
               </div>
