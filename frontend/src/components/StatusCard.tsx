@@ -41,7 +41,7 @@ export function StatusCard({ vehicle }: { vehicle: Vehicle }) {
 
   return (
     <div
-      className={`relative bg-surface border ${cfg.ring} rounded-3xl p-7 md:p-9 w-full overflow-hidden`}
+      className={`relative bg-surface border ${cfg.ring} rounded-3xl p-7 md:p-9 w-full overflow-hidden shadow-2xl shadow-black/20`}
     >
       {/* ambient status glow, the card's signature element */}
       <div className={`absolute inset-0 opacity-[0.15] ${cfg.glow} pointer-events-none`} />
@@ -57,13 +57,13 @@ export function StatusCard({ vehicle }: { vehicle: Vehicle }) {
                 vehicle.status === "IN_USE" ? "animate-pulse" : ""
               }`}
             />
-            <h2 className={`font-display text-3xl font-semibold ${cfg.color}`}>
+            <h2 className={`font-display text-3xl md:text-4xl font-semibold ${cfg.color}`}>
               {cfg.label}
             </h2>
           </div>
         </div>
-        <div className={`w-12 h-12 rounded-2xl ${cfg.dim} flex items-center justify-center shrink-0`}>
-          <Car size={22} className={cfg.color} strokeWidth={2} />
+        <div className={`w-12 h-12 md:w-14 md:h-14 rounded-2xl ${cfg.dim} flex items-center justify-center shrink-0`}>
+          <Car size={22} className={`md:size-7 ${cfg.color}`} strokeWidth={2} />
         </div>
       </div>
 

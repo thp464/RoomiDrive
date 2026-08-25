@@ -81,7 +81,7 @@ export function Dashboard() {
   return (
     <div className="min-h-screen">
       <header className="border-b border-border">
-        <div className="max-w-lg mx-auto px-5 py-4 flex items-center justify-between">
+        <div className="max-w-lg sm:max-w-3xl lg:max-w-6xl mx-auto px-5 sm:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-available-dim flex items-center justify-center">
               <Car size={16} className="text-available" strokeWidth={2.25} />
@@ -110,7 +110,7 @@ export function Dashboard() {
         </div>
       </header>
 
-      <main className="max-w-lg mx-auto px-5 py-8">
+      <main className="max-w-lg sm:max-w-3xl lg:max-w-6xl mx-auto px-5 sm:px-8 py-8 lg:py-12">
         {loading ? (
           <div className="text-center text-text-muted py-16 text-sm">Loading...</div>
         ) : !vehicle ? (
@@ -118,62 +118,66 @@ export function Dashboard() {
             No vehicle found for your household yet.
           </div>
         ) : (
-          <>
-            <StatusCard vehicle={vehicle} />
+          <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-8 lg:gap-10 items-start">
+            <div>
+              <StatusCard vehicle={vehicle} />
 
-            <div className="flex gap-3 mt-5">
-              {vehicle.status === "AVAILABLE" && (
-                <button onClick={() => setShowCheckout(true)} className="btn-primary flex-1">
-                  Check out
+              <div className="flex gap-3 mt-5">
+                {vehicle.status === "AVAILABLE" && (
+                  <button onClick={() => setShowCheckout(true)} className="btn-primary flex-1">
+                    Check out
+                  </button>
+                )}
+                {vehicle.status === "IN_USE" && (
+                  <button
+                    onClick={() => setShowCheckin(true)}
+                    disabled={!isMine}
+                    title={!isMine ? `Only ${vehicle.held_by?.name} can check this in` : undefined}
+                    className="btn-primary flex-1"
+                  >
+                    Check in
+                  </button>
+                )}
+                <button onClick={refresh} className="btn-secondary" title="Refresh status">
+                  <RefreshCw size={15} />
                 </button>
+              </div>
+
+              {vehicle.status === "IN_USE" && !isMine && (
+                <p className="text-xs text-text-faint text-center mt-3">
+                  Only {vehicle.held_by?.name} can check the car back in.
+                </p>
               )}
-              {vehicle.status === "IN_USE" && (
-                <button
-                  onClick={() => setShowCheckin(true)}
-                  disabled={!isMine}
-                  title={!isMine ? `Only ${vehicle.held_by?.name} can check this in` : undefined}
-                  className="btn-primary flex-1"
-                >
-                  Check in
-                </button>
-              )}
-              <button onClick={refresh} className="btn-secondary" title="Refresh status">
-                <RefreshCw size={15} />
-              </button>
             </div>
 
-            {vehicle.status === "IN_USE" && !isMine && (
-              <p className="text-xs text-text-faint text-center mt-3">
-                Only {vehicle.held_by?.name} can check the car back in.
-              </p>
-            )}
+            <div className="space-y-8">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-xs text-text-muted uppercase tracking-wider">
+                    Reservations
+                  </h3>
+                  <button
+                    onClick={() => setShowReserve(true)}
+                    className="flex items-center gap-1 text-xs text-available hover:opacity-80 transition-opacity"
+                  >
+                    <CalendarPlus size={13} /> Reserve a time
+                  </button>
+                </div>
+                <div className="bg-surface border border-border rounded-2xl px-5 py-1">
+                  <ReservationsPanel reservations={reservations} onCancel={handleCancelReservation} />
+                </div>
+              </div>
 
-            <div className="mt-8">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xs text-text-muted uppercase tracking-wider">
-                  Reservations
+              <div>
+                <h3 className="text-xs text-text-muted uppercase tracking-wider mb-3">
+                  Recent activity
                 </h3>
-                <button
-                  onClick={() => setShowReserve(true)}
-                  className="flex items-center gap-1 text-xs text-available hover:opacity-80 transition-opacity"
-                >
-                  <CalendarPlus size={13} /> Reserve a time
-                </button>
-              </div>
-              <div className="bg-surface border border-border rounded-2xl px-5 py-1">
-                <ReservationsPanel reservations={reservations} onCancel={handleCancelReservation} />
+                <div className="bg-surface border border-border rounded-2xl px-5 py-1">
+                  <TripHistory trips={trips} />
+                </div>
               </div>
             </div>
-
-            <div className="mt-8">
-              <h3 className="text-xs text-text-muted uppercase tracking-wider mb-3">
-                Recent activity
-              </h3>
-              <div className="bg-surface border border-border rounded-2xl px-5 py-1">
-                <TripHistory trips={trips} />
-              </div>
-            </div>
-          </>
+          </div>
         )}
       </main>
 

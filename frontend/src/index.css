@@ -24,8 +24,16 @@
 
 body {
   background-color: var(--color-bg);
+  /* Faint ambient glow blobs, fixed to the viewport, so the flat dark
+     background has some depth instead of reading as a single solid slab. */
+  background-image:
+    radial-gradient(50% 40% at 12% -5%, rgba(125, 211, 160, 0.10), transparent 70%),
+    radial-gradient(45% 35% at 100% 10%, rgba(242, 166, 90, 0.07), transparent 70%),
+    radial-gradient(40% 35% at 50% 100%, rgba(125, 211, 160, 0.05), transparent 70%);
+  background-attachment: fixed;
   color: var(--color-text);
   font-family: var(--font-body);
+  min-height: 100vh;
 }
 
 .font-display {
