@@ -6,7 +6,7 @@ end_at) or upcoming, nobody but its owner can create an overlapping one,
 and nobody but its owner can check the vehicle out during that window
 (enforced in routers/vehicles.py's checkout_vehicle).
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, List
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -19,6 +19,18 @@ from core.deps import require_password_set
 from locking import vehicle_lock, LockNotAcquired
 
 router = APIRouter(prefix="/api/vehicles/{vehicle_id}/reservations", tags=["reservations"])
+
+
+def _to_naive_utc(dt: datetime) -> datetime:
+    """
+    The frontend sends timezone-aware ISO strings (new Date().toISOString()
+    ends in "Z"). Every other datetime in this app (checked_out_at,
+    datetime.utcnow(), etc.) is naive UTC, so normalize here rather than
+    compare naive vs. aware and raise a TypeError.
+    """
+    if dt.tzinfo is not None:
+        return dt.astimezone(timezone.utc).replace(tzinfo=None)
+    return dt
 
 
 class ReservationRequest(BaseModel):
@@ -84,14 +96,17 @@ def create_reservation(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_password_set),
 ):
-    if req.end_at <= req.start_at:
+    start_at = _to_naive_utc(req.start_at)
+    end_at = _to_naive_utc(req.end_at)
+
+    if end_at <= start_at:
         raise HTTPException(400, "end_at must be after start_at")
-    if req.end_at <= datetime.utcnow():
+    if end_at <= datetime.utcnow():
         raise HTTPException(400, "Reservation must end in the future")
 
     try:
         with vehicle_lock(vehicle_id):
-            conflict = _overlaps(db, vehicle_id, req.start_at, req.end_at)
+            conflict = _overlaps(db, vehicle_id, start_at, end_at)
             if conflict:
                 raise HTTPException(
                     409,
@@ -103,8 +118,8 @@ def create_reservation(
                 household_id=current_user.household_id,
                 vehicle_id=vehicle_id,
                 user_id=current_user.id,
-                start_at=req.start_at,
-                end_at=req.end_at,
+                start_at=start_at,
+                end_at=end_at,
                 note=req.note,
             )
             db.add(reservation)
