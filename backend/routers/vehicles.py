@@ -16,7 +16,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from database import get_db
-from models import Vehicle, VehicleStatus, User, TripHistory
+from models import Vehicle, VehicleStatus, User, TripHistory, Reservation
 from core.deps import require_password_set
 from locking import vehicle_lock, LockNotAcquired
 
@@ -138,6 +138,22 @@ def checkout_vehicle(
                 raise HTTPException(409, f"Vehicle is not available (status={vehicle.status})")
 
             now = datetime.utcnow()
+            active_reservation = (
+                db.query(Reservation)
+                .filter(
+                    Reservation.vehicle_id == vehicle_id,
+                    Reservation.start_at <= now,
+                    Reservation.end_at > now,
+                )
+                .first()
+            )
+            if active_reservation and active_reservation.user_id != current_user.id:
+                raise HTTPException(
+                    409,
+                    f"Reserved by {active_reservation.user.name} until "
+                    f"{active_reservation.end_at.isoformat()}",
+                )
+
             vehicle.status = VehicleStatus.IN_USE
             vehicle.held_by_user_id = current_user.id
             vehicle.checked_out_at = now

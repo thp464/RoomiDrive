@@ -12,7 +12,7 @@ from fastapi import FastAPI
 
 from database import Base, engine
 import models  # noqa: F401 -- import so every model registers on Base before create_all
-from routers import auth, admin, vehicles
+from routers import auth, admin, vehicles, reservations
 
 Base.metadata.create_all(bind=engine)
 
@@ -21,6 +21,7 @@ app = FastAPI(title="RoomiDrive")
 app.include_router(auth.router)
 app.include_router(admin.router)
 app.include_router(vehicles.router)
+app.include_router(reservations.router)
 
 
 @app.get("/health")

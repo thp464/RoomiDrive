@@ -53,3 +53,18 @@ export interface CheckinPayload {
   lat?: number | null;
   lng?: number | null;
 }
+
+export interface Reservation {
+  id: number;
+  vehicle_id: number;
+  user: Holder;
+  start_at: string;
+  end_at: string;
+  note: string | null;
+}
+
+export interface ReservationPayload {
+  start_at: string;
+  end_at: string;
+  note?: string | null;
+}

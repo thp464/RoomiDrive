@@ -1,28 +1,34 @@
 import { useEffect, useState, useCallback } from "react";
-import { Car, LogOut, RefreshCw, Users } from "lucide-react";
+import { Car, LogOut, RefreshCw, Users, CalendarPlus } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { listVehicles, checkoutVehicle, checkinVehicle, listTrips } from "../api/vehicles";
-import type { Vehicle, Trip } from "../types";
+import { listReservations, createReservation, cancelReservation } from "../api/reservations";
+import type { Vehicle, Trip, Reservation } from "../types";
 import { StatusCard } from "./StatusCard";
 import { CheckoutModal } from "./CheckoutModal";
 import { CheckinModal } from "./CheckinModal";
 import { AdminUsersModal } from "./AdminUsersModal";
 import { TripHistory } from "./TripHistory";
+import { ReservationModal } from "./ReservationModal";
+import { ReservationsPanel } from "./ReservationsPanel";
 
 export function Dashboard() {
   const { user, logout } = useAuth();
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [trips, setTrips] = useState<Trip[]>([]);
+  const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCheckout, setShowCheckout] = useState(false);
   const [showCheckin, setShowCheckin] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
+  const [showReserve, setShowReserve] = useState(false);
 
   const refresh = useCallback(async () => {
     const vehicles = await listVehicles();
     const v = vehicles[0] ?? null;
     setVehicle(v);
     setTrips(v ? await listTrips(v.id) : []);
+    setReservations(v ? await listReservations(v.id) : []);
     setLoading(false);
   }, []);
 
@@ -51,6 +57,23 @@ export function Dashboard() {
     setVehicle(updated);
     setShowCheckin(false);
     setTrips(await listTrips(updated.id));
+  }
+
+  async function handleReserve(startAt: string, endAt: string, note: string) {
+    if (!vehicle) return;
+    await createReservation(vehicle.id, {
+      start_at: startAt,
+      end_at: endAt,
+      note: note || null,
+    });
+    setShowReserve(false);
+    setReservations(await listReservations(vehicle.id));
+  }
+
+  async function handleCancelReservation(id: number) {
+    if (!vehicle) return;
+    await cancelReservation(vehicle.id, id);
+    setReservations(await listReservations(vehicle.id));
   }
 
   const isMine = vehicle?.held_by?.email === user?.email;
@@ -126,6 +149,23 @@ export function Dashboard() {
             )}
 
             <div className="mt-8">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-xs text-text-muted uppercase tracking-wider">
+                  Reservations
+                </h3>
+                <button
+                  onClick={() => setShowReserve(true)}
+                  className="flex items-center gap-1 text-xs text-available hover:opacity-80 transition-opacity"
+                >
+                  <CalendarPlus size={13} /> Reserve a time
+                </button>
+              </div>
+              <div className="bg-surface border border-border rounded-2xl px-5 py-1">
+                <ReservationsPanel reservations={reservations} onCancel={handleCancelReservation} />
+              </div>
+            </div>
+
+            <div className="mt-8">
               <h3 className="text-xs text-text-muted uppercase tracking-wider mb-3">
                 Recent activity
               </h3>
@@ -142,6 +182,9 @@ export function Dashboard() {
       )}
       {showCheckin && (
         <CheckinModal onClose={() => setShowCheckin(false)} onSubmit={handleCheckin} />
+      )}
+      {showReserve && (
+        <ReservationModal onClose={() => setShowReserve(false)} onSubmit={handleReserve} />
       )}
       {showAdmin && <AdminUsersModal onClose={() => setShowAdmin(false)} />}
     </div>
