@@ -18,7 +18,6 @@ from database import Base
 class VehicleStatus(str, enum.Enum):
     AVAILABLE = "AVAILABLE"
     IN_USE = "IN_USE"
-    MAINTENANCE = "MAINTENANCE"
 
 
 class Vehicle(Base):

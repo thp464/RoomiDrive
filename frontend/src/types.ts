@@ -1,4 +1,4 @@
-export type VehicleStatus = "AVAILABLE" | "IN_USE" | "MAINTENANCE";
+export type VehicleStatus = "AVAILABLE" | "IN_USE";
 
 export interface Holder {
   id: number;

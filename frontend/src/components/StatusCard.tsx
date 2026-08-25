@@ -1,5 +1,6 @@
-import { Car, Clock, MapPin, Gauge } from "lucide-react";
-import type { Vehicle } from "../types";
+import { Car, Clock, MapPin, Gauge, CalendarClock } from "lucide-react";
+import type { Vehicle, Reservation } from "../types";
+import { useAuth } from "../context/AuthContext";
 
 const STATUS_CONFIG = {
   AVAILABLE: {
@@ -16,13 +17,6 @@ const STATUS_CONFIG = {
     ring: "border-inuse/30",
     glow: "shadow-[0_0_60px_-15px_var(--color-inuse)]",
   },
-  MAINTENANCE: {
-    label: "In maintenance",
-    color: "text-maintenance",
-    dim: "bg-maintenance-dim",
-    ring: "border-maintenance/30",
-    glow: "shadow-[0_0_60px_-15px_var(--color-maintenance)]",
-  },
 } as const;
 
 function formatTime(iso: string | null): string {
@@ -36,8 +30,22 @@ function formatTime(iso: string | null): string {
   });
 }
 
-export function StatusCard({ vehicle }: { vehicle: Vehicle }) {
+export function StatusCard({
+  vehicle,
+  reservations,
+}: {
+  vehicle: Vehicle;
+  reservations: Reservation[];
+}) {
+  const { user } = useAuth();
   const cfg = STATUS_CONFIG[vehicle.status];
+
+  // reservations is already sorted ascending by start_at and pre-filtered to
+  // end_at > now, so [0] is either the currently active one or the next
+  // upcoming one -- either way, the one worth surfacing.
+  const nextReservation = reservations[0];
+  const reservationIsActive =
+    nextReservation && new Date(nextReservation.start_at + "Z") <= new Date();
 
   return (
     <div
@@ -66,6 +74,31 @@ export function StatusCard({ vehicle }: { vehicle: Vehicle }) {
           <Car size={22} className={`md:size-7 ${cfg.color}`} strokeWidth={2} />
         </div>
       </div>
+
+      {vehicle.status === "AVAILABLE" && nextReservation && (
+        <div
+          className={`relative flex items-start gap-2 rounded-xl px-3 py-2.5 mb-4 text-sm ${
+            reservationIsActive ? "bg-inuse-dim text-inuse" : "bg-surface-raised text-text-muted"
+          }`}
+        >
+          <CalendarClock size={15} className="shrink-0 mt-0.5" />
+          <span>
+            {reservationIsActive ? (
+              <>
+                Reserved by{" "}
+                {nextReservation.user.email === user?.email ? "you" : nextReservation.user.name}{" "}
+                until {formatTime(nextReservation.end_at)}
+              </>
+            ) : (
+              <>
+                Next reservation:{" "}
+                {nextReservation.user.email === user?.email ? "you" : nextReservation.user.name},{" "}
+                {formatTime(nextReservation.start_at)} – {formatTime(nextReservation.end_at)}
+              </>
+            )}
+          </span>
+        </div>
+      )}
 
       {vehicle.status === "IN_USE" && vehicle.held_by && (
         <div className="relative grid grid-cols-1 sm:grid-cols-2 gap-4 mb-2">

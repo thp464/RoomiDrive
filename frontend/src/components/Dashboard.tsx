@@ -34,6 +34,10 @@ export function Dashboard() {
 
   useEffect(() => {
     refresh();
+    // Light polling so a roommate's checkout/checkin/reservation shows up
+    // without everyone needing to hit the manual refresh button.
+    const interval = setInterval(refresh, 15_000);
+    return () => clearInterval(interval);
   }, [refresh]);
 
   async function handleCheckout(destinationNote: string, estimatedReturnAt: string | null) {
@@ -120,7 +124,7 @@ export function Dashboard() {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-8 lg:gap-10 items-start">
             <div>
-              <StatusCard vehicle={vehicle} />
+              <StatusCard vehicle={vehicle} reservations={reservations} />
 
               <div className="flex gap-3 mt-5">
                 {vehicle.status === "AVAILABLE" && (
