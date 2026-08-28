@@ -3,5 +3,6 @@ from models.user import User
 from models.vehicle import Vehicle, VehicleStatus
 from models.trip_history import TripHistory
 from models.reservation import Reservation
+from models.gas_expense import GasExpense
 
-__all__ = ["Household", "User", "Vehicle", "VehicleStatus", "TripHistory", "Reservation"]
+__all__ = ["Household", "User", "Vehicle", "VehicleStatus", "TripHistory", "Reservation", "GasExpense"]

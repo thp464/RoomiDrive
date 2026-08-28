@@ -1,9 +1,10 @@
 import { useEffect, useState, useCallback } from "react";
-import { Car, LogOut, RefreshCw, Users, CalendarPlus } from "lucide-react";
+import { Car, LogOut, RefreshCw, Users, CalendarPlus, Fuel } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { listVehicles, checkoutVehicle, checkinVehicle, listTrips } from "../api/vehicles";
 import { listReservations, createReservation, cancelReservation } from "../api/reservations";
-import type { Vehicle, Trip, Reservation } from "../types";
+import { listGasExpenses, createGasExpense, deleteGasExpense } from "../api/gasExpenses";
+import type { Vehicle, Trip, Reservation, GasExpense } from "../types";
 import { StatusCard } from "./StatusCard";
 import { CheckoutModal } from "./CheckoutModal";
 import { CheckinModal } from "./CheckinModal";
@@ -11,17 +12,24 @@ import { AdminUsersModal } from "./AdminUsersModal";
 import { TripHistory } from "./TripHistory";
 import { ReservationModal } from "./ReservationModal";
 import { ReservationsPanel } from "./ReservationsPanel";
+import { GasExpenseModal } from "./GasExpenseModal";
+import { GasExpensesTab } from "./GasExpensesTab";
+
+type Tab = "vehicle" | "gas";
 
 export function Dashboard() {
   const { user, logout } = useAuth();
+  const [tab, setTab] = useState<Tab>("vehicle");
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [trips, setTrips] = useState<Trip[]>([]);
   const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [gasExpenses, setGasExpenses] = useState<GasExpense[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCheckout, setShowCheckout] = useState(false);
   const [showCheckin, setShowCheckin] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
   const [showReserve, setShowReserve] = useState(false);
+  const [showGasExpense, setShowGasExpense] = useState(false);
 
   const refresh = useCallback(async () => {
     const vehicles = await listVehicles();
@@ -29,6 +37,7 @@ export function Dashboard() {
     setVehicle(v);
     setTrips(v ? await listTrips(v.id) : []);
     setReservations(v ? await listReservations(v.id) : []);
+    setGasExpenses(v ? await listGasExpenses(v.id) : []);
     setLoading(false);
   }, []);
 
@@ -80,6 +89,19 @@ export function Dashboard() {
     setReservations(await listReservations(vehicle.id));
   }
 
+  async function handleLogGasExpense(amount: number, note: string) {
+    if (!vehicle) return;
+    await createGasExpense(vehicle.id, { amount, note: note || null });
+    setShowGasExpense(false);
+    setGasExpenses(await listGasExpenses(vehicle.id));
+  }
+
+  async function handleDeleteGasExpense(id: number) {
+    if (!vehicle) return;
+    await deleteGasExpense(vehicle.id, id);
+    setGasExpenses(await listGasExpenses(vehicle.id));
+  }
+
   const isMine = vehicle?.held_by?.email === user?.email;
 
   return (
@@ -122,66 +144,101 @@ export function Dashboard() {
             No vehicle found for your household yet.
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-8 lg:gap-10 items-start">
-            <div>
-              <StatusCard vehicle={vehicle} reservations={reservations} />
-
-              <div className="flex gap-3 mt-5">
-                {vehicle.status === "AVAILABLE" && (
-                  <button onClick={() => setShowCheckout(true)} className="btn-primary flex-1">
-                    Check out
-                  </button>
-                )}
-                {vehicle.status === "IN_USE" && (
-                  <button
-                    onClick={() => setShowCheckin(true)}
-                    disabled={!isMine}
-                    title={!isMine ? `Only ${vehicle.held_by?.name} can check this in` : undefined}
-                    className="btn-primary flex-1"
-                  >
-                    Check in
-                  </button>
-                )}
-                <button onClick={refresh} className="btn-secondary" title="Refresh status">
-                  <RefreshCw size={15} />
-                </button>
-              </div>
-
-              {vehicle.status === "IN_USE" && !isMine && (
-                <p className="text-xs text-text-faint text-center mt-3">
-                  Only {vehicle.held_by?.name} can check the car back in.
-                </p>
-              )}
+          <>
+            <div className="flex mb-8 bg-surface rounded-lg p-1 border border-border max-w-xs">
+              <button
+                onClick={() => setTab("vehicle")}
+                className={`flex-1 flex items-center justify-center gap-1.5 text-sm py-1.5 rounded-md transition-colors ${
+                  tab === "vehicle" ? "bg-surface-raised text-text" : "text-text-muted"
+                }`}
+              >
+                <Car size={14} /> Vehicle
+              </button>
+              <button
+                onClick={() => setTab("gas")}
+                className={`flex-1 flex items-center justify-center gap-1.5 text-sm py-1.5 rounded-md transition-colors ${
+                  tab === "gas" ? "bg-surface-raised text-text" : "text-text-muted"
+                }`}
+              >
+                <Fuel size={14} /> Gas
+              </button>
             </div>
 
-            <div className="space-y-8">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-xs text-text-muted uppercase tracking-wider">
-                    Reservations
-                  </h3>
+            {tab === "gas" ? (
+              <>
+                <div className="flex items-center justify-end mb-4">
                   <button
-                    onClick={() => setShowReserve(true)}
+                    onClick={() => setShowGasExpense(true)}
                     className="flex items-center gap-1 text-xs text-available hover:opacity-80 transition-opacity"
                   >
-                    <CalendarPlus size={13} /> Reserve a time
+                    <Fuel size={13} /> Log gas expense
                   </button>
                 </div>
-                <div className="bg-surface border border-border rounded-2xl p-5">
-                  <ReservationsPanel reservations={reservations} onCancel={handleCancelReservation} />
-                </div>
-              </div>
+                <GasExpensesTab expenses={gasExpenses} onDelete={handleDeleteGasExpense} />
+              </>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-8 lg:gap-10 items-start">
+                <div>
+                  <StatusCard vehicle={vehicle} reservations={reservations} />
 
-              <div>
-                <h3 className="text-xs text-text-muted uppercase tracking-wider mb-3">
-                  Recent activity
-                </h3>
-                <div className="bg-surface border border-border rounded-2xl p-5">
-                  <TripHistory trips={trips} />
+                  <div className="flex gap-3 mt-5">
+                    {vehicle.status === "AVAILABLE" && (
+                      <button onClick={() => setShowCheckout(true)} className="btn-primary flex-1">
+                        Check out
+                      </button>
+                    )}
+                    {vehicle.status === "IN_USE" && (
+                      <button
+                        onClick={() => setShowCheckin(true)}
+                        disabled={!isMine}
+                        title={!isMine ? `Only ${vehicle.held_by?.name} can check this in` : undefined}
+                        className="btn-primary flex-1"
+                      >
+                        Check in
+                      </button>
+                    )}
+                    <button onClick={refresh} className="btn-secondary" title="Refresh status">
+                      <RefreshCw size={15} />
+                    </button>
+                  </div>
+
+                  {vehicle.status === "IN_USE" && !isMine && (
+                    <p className="text-xs text-text-faint text-center mt-3">
+                      Only {vehicle.held_by?.name} can check the car back in.
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-8">
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-xs text-text-muted uppercase tracking-wider">
+                        Reservations
+                      </h3>
+                      <button
+                        onClick={() => setShowReserve(true)}
+                        className="flex items-center gap-1 text-xs text-available hover:opacity-80 transition-opacity"
+                      >
+                        <CalendarPlus size={13} /> Reserve a time
+                      </button>
+                    </div>
+                    <div className="bg-surface border border-border rounded-2xl p-5">
+                      <ReservationsPanel reservations={reservations} onCancel={handleCancelReservation} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-xs text-text-muted uppercase tracking-wider mb-3">
+                      Recent activity
+                    </h3>
+                    <div className="bg-surface border border-border rounded-2xl p-5">
+                      <TripHistory trips={trips} />
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
+            )}
+          </>
         )}
       </main>
 
@@ -193,6 +250,9 @@ export function Dashboard() {
       )}
       {showReserve && (
         <ReservationModal onClose={() => setShowReserve(false)} onSubmit={handleReserve} />
+      )}
+      {showGasExpense && (
+        <GasExpenseModal onClose={() => setShowGasExpense(false)} onSubmit={handleLogGasExpense} />
       )}
       {showAdmin && <AdminUsersModal onClose={() => setShowAdmin(false)} />}
     </div>

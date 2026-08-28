@@ -12,7 +12,7 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     jwt_secret: str = "dev-secret-change-in-production"
     jwt_algorithm: str = "HS256"
-    access_token_expire_minutes: int = 60 * 24  # 24h -- generous for POC convenience
+    access_token_expire_minutes: int = 60 * 24 * 30  # 30 days -- household app, low-stakes, stay logged in
 
     # Required to call /auth/bootstrap-household -- otherwise anyone who finds
     # the site can create their own household. Not a login password, just a

@@ -68,3 +68,17 @@ export interface ReservationPayload {
   end_at: string;
   note?: string | null;
 }
+
+export interface GasExpense {
+  id: number;
+  vehicle_id: number;
+  user: Holder;
+  amount: number;
+  note: string | null;
+  created_at: string;
+}
+
+export interface GasExpensePayload {
+  amount: number;
+  note?: string | null;
+}
